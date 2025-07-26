@@ -1,90 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Pomelo Care Security and Compliance Take Home Project</title>
-
-  <!-- Import Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      background-color: #f2f4f8;
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: white;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 600px;
-      text-align: center;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      width: 80%;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      background-color: #4285f4;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #357ae8;
-    }
-
-    table {
-      margin-top: 20px;
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-
-    .g_id_signin {
-      margin-bottom: 20px;
-    }
-
-    .highlighted {
-      background-color: #ffcccc;
-    }
-  </style>
-
-  <!-- Google Identity Services SDK -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-</head>
 <body>
-  <!-- ✅ CENTERED CONTAINER -->
   <div class="container">
-    <h2>Submit your Message</h2>
+    <!-- ✅ ADD VISIBLE PAGE TITLE -->
+    <h1>Pomelo SecCom Webpage</h1>
 
-    <!-- Google Sign-In Button -->
+    <!-- ✅ Google Login -->
     <div id="g_id_onload"
          data-client_id="400648260952-6g5s737flkmh2eq00h84fl72ieeua63t.apps.googleusercontent.com"
          data-context="signin"
@@ -101,13 +20,16 @@
          data-logo_alignment="left">
     </div>
 
+    <!-- ✅ Subtitle -->
+    <h2>Submit your Message</h2>
+
     <!-- Input Form -->
     <form id="textForm">
       <input type="text" id="userInput" placeholder="Enter your message" required>
       <button type="submit">Submit</button>
     </form>
 
-    <!-- Submission Table -->
+    <!-- Table -->
     <table id="submissionTable">
       <thead>
         <tr>
@@ -116,47 +38,8 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Populated dynamically -->
+        <!-- JS will populate rows -->
       </tbody>
     </table>
   </div>
-
-  <script>
-    // Hide the form by default
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("textForm").style.display = "none";
-    });
-
-    // Google Login callback
-    function handleCredentialResponse(response) {
-      const jwt = response.credential;
-      const payload = JSON.parse(atob(jwt.split('.')[1]));
-      alert("Signed in as: " + payload.name);
-
-      localStorage.setItem("userName", payload.name);
-      localStorage.setItem("userEmail", payload.email);
-
-      document.getElementById("textForm").style.display = "block";
-    }
-
-    // Handle form submission
-    document.getElementById("textForm").addEventListener("submit", function(event) {
-      event.preventDefault();
-      const input = document.getElementById("userInput").value;
-      const date = new Date().toLocaleString();
-
-      const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
-      const newRow = table.insertRow();
-
-      const messageCell = newRow.insertCell(0);
-      const dateCell = newRow.insertCell(1);
-
-      messageCell.textContent = input;
-      dateCell.textContent = date;
-
-      document.getElementById("userInput").value = '';
-    });
-  </script>
 </body>
-</html>
-
