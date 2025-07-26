@@ -168,13 +168,17 @@
         try {
           const { importSPKI, jwtVerify } = jose;
           const publicKey = await importSPKI(
-            `-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm\narJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==\n-----END PUBLIC KEY-----`,
+`-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
+arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
+-----END PUBLIC KEY-----`,
             'ES256'
           );
           await jwtVerify(input, publicKey);
+          console.log("✅ JWT verified and highlighted.");
           newRow.classList.add("highlighted");
         } catch (err) {
-          console.warn("Invalid JWT:", err.message);
+          console.warn("❌ Invalid JWT:", err.message);
         }
       }
 
