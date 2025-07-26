@@ -4,6 +4,48 @@
   <meta charset="UTF-8">
   <title>Take Home Project</title>
 </head>
+  <!-- Google Identity Services SDK -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- Google Sign-In Configuration -->
+<div id="g_id_onload"
+     data-client_id="400648260952-6g5s737flkmh2eq00h84fl72ieeua63t.apps.googleusercontent.com"
+     data-context="signin"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false">
+</div>
+
+<!-- Visible Google Sign-In Button -->
+<div class="g_id_signin"
+     data-type="standard"
+     data-shape="pill"
+     data-theme="outline"
+     data-text="sign_in_with"
+     data-size="large"
+     data-logo_alignment="left">
+</div>
+
+<script>
+  // This function is called automatically after successful login
+  function handleCredentialResponse(response) {
+    const jwt = response.credential;
+    const payload = JSON.parse(atob(jwt.split('.')[1])); // Decode the JWT payload
+
+    alert("Signed in as: " + payload.name);
+
+    // Optional: Store user info in localStorage
+    localStorage.setItem("userName", payload.name);
+    localStorage.setItem("userEmail", payload.email);
+
+    // Show the form once signed in
+    document.getElementById("textForm").style.display = "block";
+  }
+
+  // Hide form unless signed in
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("textForm").style.display = "none";
+  });
+</script>
 <body>
   <h2>Submit your Message</h2>
 
