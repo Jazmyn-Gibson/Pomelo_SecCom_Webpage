@@ -2,159 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Pomelo Care Security and Compliance Take Home Project</title>
+
   <!-- Import Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-<style>
-  /* Set background color and font for entire page */
-  body {
-    background-color: #f2f4f8;
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center;     /* Center vertically */
-    height: 100vh;           /* Full screen height */
-  }
+  <style>
+    body {
+      background-color: #f2f4f8;
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-  /* Container to wrap content */
-  .container {
-    background-color: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-    text-align: center;
-  }
+    .container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
 
-  h2 {
-    margin-bottom: 20px;
-  }
+    h2 {
+      margin-bottom: 20px;
+    }
 
-  input[type="text"] {
-    padding: 10px;
-    width: 80%;
-    font-size: 16px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-  }
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
 
-  button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border: none;
-    background-color: #4285f4;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-  }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background-color: #4285f4;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-  button:hover {
-    background-color: #357ae8;
-  }
+    button:hover {
+      background-color: #357ae8;
+    }
 
-  table {
-    margin-top: 20px;
-    width: 100%;
-    border-collapse: collapse;
-  }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-  th, td {
-    padding: 10px;
-    border: 1px solid #ccc;
-  }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
 
-  .g_id_signin {
-    margin-bottom: 20px;
-  }
+    .g_id_signin {
+      margin-bottom: 20px;
+    }
 
-  .highlighted {
-    background-color: #ffcccc; /* Light red background for verified JWTs */
-  }
-</style>
+    .highlighted {
+      background-color: #ffcccc;
+    }
+  </style>
 
-  <title>Take Home Project</title>
-</head>
   <!-- Google Identity Services SDK -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<!-- Google Sign-In Configuration -->
-<div id="g_id_onload"
-     data-client_id="400648260952-6g5s737flkmh2eq00h84fl72ieeua63t.apps.googleusercontent.com"
-     data-context="signin"
-     data-callback="handleCredentialResponse"
-     data-auto_prompt="false">
-</div>
-
-<!-- Visible Google Sign-In Button -->
-<div class="g_id_signin"
-     data-type="standard"
-     data-shape="pill"
-     data-theme="outline"
-     data-text="sign_in_with"
-     data-size="large"
-     data-logo_alignment="left">
-</div>
-
-<script>
-  // This function is called automatically after successful login
-  function handleCredentialResponse(response) {
-    const jwt = response.credential;
-    const payload = JSON.parse(atob(jwt.split('.')[1])); // Decode the JWT payload
-
-    alert("Signed in as: " + payload.name);
-
-    // Optional: Store user info in localStorage
-    localStorage.setItem("userName", payload.name);
-    localStorage.setItem("userEmail", payload.email);
-
-    // Show the form once signed in
-    document.getElementById("textForm").style.display = "block";
-  }
-
-  // Hide form unless signed in
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("textForm").style.display = "none";
-  });
-</script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
 <body>
-  <!-- 🧊 Centered Container -->
+  <!-- ✅ CENTERED CONTAINER -->
   <div class="container">
-  <h2>Submit your Message</h2>
+    <h2>Submit your Message</h2>
 
-  <!-- Input Form -->
-  <form id="textForm">
-    <input type="text" id="userInput" placeholder="Enter your message" required>
-    <button type="submit">Submit</button>
-  </form>
+    <!-- Google Sign-In Button -->
+    <div id="g_id_onload"
+         data-client_id="400648260952-6g5s737flkmh2eq00h84fl72ieeua63t.apps.googleusercontent.com"
+         data-context="signin"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
 
-  <!-- Table for displaying submissions -->
-  <table border="1" id="submissionTable">
-    <thead>
-      <tr>
-        <th>Message</th>
-        <th>Date & Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Submissions will appear here -->
-    </tbody>
-  </table>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="pill"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+
+    <!-- Input Form -->
+    <form id="textForm">
+      <input type="text" id="userInput" placeholder="Enter your message" required>
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Submission Table -->
+    <table id="submissionTable">
+      <thead>
+        <tr>
+          <th>Message</th>
+          <th>Date & Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Populated dynamically -->
+      </tbody>
+    </table>
+  </div>
 
   <script>
+    // Hide the form by default
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("textForm").style.display = "none";
+    });
+
+    // Google Login callback
+    function handleCredentialResponse(response) {
+      const jwt = response.credential;
+      const payload = JSON.parse(atob(jwt.split('.')[1]));
+      alert("Signed in as: " + payload.name);
+
+      localStorage.setItem("userName", payload.name);
+      localStorage.setItem("userEmail", payload.email);
+
+      document.getElementById("textForm").style.display = "block";
+    }
+
     // Handle form submission
     document.getElementById("textForm").addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevents page reload
-
-      const input = document.getElementById("userInput").value; // Get input text
-      const date = new Date().toLocaleString(); // Get current date/time
+      event.preventDefault();
+      const input = document.getElementById("userInput").value;
+      const date = new Date().toLocaleString();
 
       const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
-
-      // Create new row
       const newRow = table.insertRow();
 
       const messageCell = newRow.insertCell(0);
@@ -163,8 +154,9 @@
       messageCell.textContent = input;
       dateCell.textContent = date;
 
-      document.getElementById("userInput").value = ''; // Clear input box
+      document.getElementById("userInput").value = '';
     });
   </script>
 </body>
 </html>
+
