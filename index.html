@@ -81,15 +81,18 @@
     }
 
     .highlighted {
-      background-color: #ffcccc;
+      background-color: #ffcccc; /* Light red for valid JWTs */
     }
   </style>
 
   <!-- Google Identity SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- JOSE JWT Verification Library -->
-  <script src="https://cdn.jsdelivr.net/npm/jose@5.2.0/dist/browser/index.min.js"></script>
+  <!-- Load jose as ES module -->
+  <script type="module">
+    import { importSPKI, jwtVerify } from 'https://cdn.jsdelivr.net/npm/jose@5.2.0/+esm';
+    window.jose = { importSPKI, jwtVerify };
+  </script>
 </head>
 <body>
   <div class="container">
@@ -134,7 +137,7 @@
     </table>
   </div>
 
-  <!-- JavaScript Logic -->
+  <!-- Main Logic -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("textForm").style.display = "none";
@@ -164,9 +167,9 @@
 
       const isJWT = input.split('.').length === 3;
 
-      if (isJWT) {
+      if (isJWT && window.jose) {
         try {
-          const { importSPKI, jwtVerify } = jose;
+          const { importSPKI, jwtVerify } = window.jose;
           const publicKey = await importSPKI(
 `-----BEGIN PUBLIC KEY-----
 MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
@@ -175,7 +178,7 @@ arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
             'ES256'
           );
           await jwtVerify(input, publicKey);
-          console.log("✅ JWT verified and highlighted.");
+          console.log("✅ JWT verified.");
           newRow.classList.add("highlighted");
         } catch (err) {
           console.warn("❌ Invalid JWT:", err.message);
