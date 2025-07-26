@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Jazmyn Gibson Pomelo Care Security and Compliance Project</title>
+  <meta charset="UTF-8" />
+  <title>Secure Web Form with JWT Verification</title>
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
 
+  <!-- Styling -->
   <style>
     body {
       background-color: #f2f4f8;
@@ -18,7 +19,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .container {
       background-color: white;
       padding: 40px;
@@ -28,19 +28,14 @@
       max-width: 600px;
       text-align: center;
     }
-
     h1 {
       font-size: 24px;
-      margin-top: 10px;
-      margin-bottom: 5px;
+      margin: 10px 0 5px;
     }
-
     h2 {
-      margin-top: 5px;
-      margin-bottom: 20px;
       font-size: 20px;
+      margin: 5px 0 20px;
     }
-
     input[type="text"] {
       padding: 10px;
       width: 80%;
@@ -49,7 +44,6 @@
       border: 1px solid #ccc;
       margin-bottom: 10px;
     }
-
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -59,43 +53,86 @@
       border-radius: 6px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #357ae8;
     }
-
     table {
       margin-top: 20px;
       width: 100%;
       border-collapse: collapse;
     }
-
     th, td {
       padding: 10px;
       border: 1px solid #ccc;
     }
-
     .g_id_signin {
       margin-bottom: 20px;
     }
-
     .highlighted {
       background-color: #ffcccc;
     }
   </style>
 
-  <!-- Google Identity Services SDK -->
+  <!-- Google Identity SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- JOSE JWT Verification using module loader -->
+  <!-- JOSE JWT Library (ES Module) -->
   <script type="module">
-    import { jwtVerify, importSPKI } from 'https://cdn.jsdelivr.net/npm/jose@5.2.0/+esm';
-    window.jwtTools = { jwtVerify, importSPKI };
+    import { importSPKI, jwtVerify } from 'https://cdn.jsdelivr.net/npm/jose@5.2.0/+esm';
+
+    // Hide form by default
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("textForm").style.display = "none";
+    });
+
+    // Google login handler
+    window.handleCredentialResponse = function(response) {
+      const jwt = response.credential;
+      const payload = JSON.parse(atob(jwt.split('.')[1]));
+      alert("Signed in as: " + payload.name);
+      document.getElementById("textForm").style.display = "block";
+    };
+
+    // Form submission
+    document.getElementById("textForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const input = document.getElementById("userInput").value;
+      const date = new Date().toLocaleString();
+      const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+      const messageCell = newRow.insertCell(0);
+      const dateCell = newRow.insertCell(1);
+
+      messageCell.textContent = input;
+      dateCell.textContent = date;
+
+      const isJWT = input.split('.').length === 3;
+
+      if (isJWT) {
+        try {
+          const publicKey = await importSPKI(
+`-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
+arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
+-----END PUBLIC KEY-----`,
+            'ES256'
+          );
+          await jwtVerify(input, publicKey);
+          newRow.classList.add("highlighted");
+          console.log("✅ Valid JWT detected");
+        } catch (err) {
+          console.warn("❌ Invalid JWT:", err.message);
+        }
+      }
+
+      document.getElementById("userInput").value = '';
+    });
   </script>
 </head>
+
 <body>
   <div class="container">
-    <!-- Google Login -->
+    <!-- Google Sign-In -->
     <div id="g_id_onload"
          data-client_id="400648260952-6g5s737flkmh2eq00h84fl72ieeua63t.apps.googleusercontent.com"
          data-context="signin"
@@ -112,17 +149,17 @@
          data-logo_alignment="left">
     </div>
 
-    <!-- Headings -->
+    <!-- Headers -->
     <h1>Secure Web Form with Google Authentication and Submission Logging</h1>
     <h2>Submit Your Message</h2>
 
     <!-- Input Form -->
     <form id="textForm">
-      <input type="text" id="userInput" placeholder="Enter your message or a JWT" required>
+      <input type="text" id="userInput" placeholder="Enter your message or JWT" required />
       <button type="submit">Submit</button>
     </form>
 
-    <!-- Table for Output -->
+    <!-- Table -->
     <table id="submissionTable">
       <thead>
         <tr>
@@ -130,62 +167,8 @@
           <th>Date & Time</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- JS will insert rows here -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
-
-  <!-- JS logic -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("textForm").style.display = "none";
-    });
-
-    function handleCredentialResponse(response) {
-      const jwt = response.credential;
-      const payload = JSON.parse(atob(jwt.split('.')[1]));
-      alert("Signed in as: " + payload.name);
-      localStorage.setItem("userName", payload.name);
-      localStorage.setItem("userEmail", payload.email);
-      document.getElementById("textForm").style.display = "block";
-    }
-
-    document.getElementById("textForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
-      const input = document.getElementById("userInput").value.trim();
-      const date = new Date().toLocaleString();
-
-      const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
-      const newRow = table.insertRow();
-      const messageCell = newRow.insertCell(0);
-      const dateCell = newRow.insertCell(1);
-
-      messageCell.textContent = input;
-      dateCell.textContent = date;
-
-      const isJWT = input.split('.').length === 3;
-
-      if (isJWT) {
-        try {
-          const { importSPKI, jwtVerify } = window.jwtTools;
-          const publicKey = await importSPKI(
-`-----BEGIN PUBLIC KEY-----
-MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
-arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
------END PUBLIC KEY-----`,
-            'ES256'
-          );
-          await jwtVerify(input, publicKey);
-          newRow.classList.add("highlighted");
-          console.log("✅ JWT is valid and row is highlighted.");
-        } catch (err) {
-          console.warn("❌ Invalid JWT:", err.message);
-        }
-      }
-
-      document.getElementById("userInput").value = '';
-    });
-  </script>
 </body>
 </html>
