@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Take Home Project</title>
+</head>
+<body>
+  <h2>Submit your Message</h2>
+
+  <!-- Input Form -->
+  <form id="textForm">
+    <input type="text" id="userInput" placeholder="Enter your message" required>
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Table for displaying submissions -->
+  <table border="1" id="submissionTable">
+    <thead>
+      <tr>
+        <th>Message</th>
+        <th>Date & Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Submissions will appear here -->
+    </tbody>
+  </table>
+
+  <script>
+    // Handle form submission
+    document.getElementById("textForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevents page reload
+
+      const input = document.getElementById("userInput").value; // Get input text
+      const date = new Date().toLocaleString(); // Get current date/time
+
+      const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
+
+      // Create new row
+      const newRow = table.insertRow();
+
+      const messageCell = newRow.insertCell(0);
+      const dateCell = newRow.insertCell(1);
+
+      messageCell.textContent = input;
+      dateCell.textContent = date;
+
+      document.getElementById("userInput").value = ''; // Clear input box
+    });
+  </script>
+</body>
+</html>
