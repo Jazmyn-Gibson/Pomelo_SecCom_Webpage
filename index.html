@@ -136,24 +136,19 @@
 
   <!-- JavaScript Logic -->
   <script>
-    // Hide form until signed in
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("textForm").style.display = "none";
     });
 
-    // Google Sign-In callback
     function handleCredentialResponse(response) {
       const jwt = response.credential;
       const payload = JSON.parse(atob(jwt.split('.')[1]));
       alert("Signed in as: " + payload.name);
-
       localStorage.setItem("userName", payload.name);
       localStorage.setItem("userEmail", payload.email);
-
       document.getElementById("textForm").style.display = "block";
     }
 
-    // Form Submission + Bonus JWT Check
     document.getElementById("textForm").addEventListener("submit", async function(event) {
       event.preventDefault();
       const input = document.getElementById("userInput").value;
@@ -167,29 +162,19 @@
       messageCell.textContent = input;
       dateCell.textContent = date;
 
-      // BONUS: Check if input is a JWT
       const isJWT = input.split('.').length === 3;
 
       if (isJWT) {
         try {
           const { importSPKI, jwtVerify } = jose;
-
           const publicKey = await importSPKI(
-            `-----BEGIN PUBLIC KEY-----
-MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
-arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
------END PUBLIC KEY-----`,
+            `-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm\narJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==\n-----END PUBLIC KEY-----`,
             'ES256'
           );
-
-          // Attempt to verify signature
           await jwtVerify(input, publicKey);
-
-          // If valid, highlight the row
           newRow.classList.add("highlighted");
         } catch (err) {
           console.warn("Invalid JWT:", err.message);
-          // No highlight if verification fails
         }
       }
 
