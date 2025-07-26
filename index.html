@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <title>Jazmyn Gibson Pomelo Care Security and Compliance Project</title>
 
-  <!-- Import Google Font -->
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
+  <!-- Page Styling -->
   <style>
     body {
       background-color: #f2f4f8;
@@ -80,18 +81,19 @@
     }
 
     .highlighted {
-      background-color: #ffcccc; /* Light red background for verified JWTs */
+      background-color: #ffcccc;
     }
   </style>
 
-  <!-- Google Identity Services SDK -->
+  <!-- Google Identity SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- JOSE JWT Verification Library -->
+  <script src="https://cdn.jsdelivr.net/npm/jose@5.2.0/dist/browser/index.min.js"></script>
 </head>
 <body>
-  <!-- Centered Container -->
   <div class="container">
-    
-    <!-- ✅ Google Sign-In Above the Title -->
+    <!-- Google Login -->
     <div id="g_id_onload"
          data-client_id="400648260952-6g5s737flkmh2eq00h84fl72ieeua63t.apps.googleusercontent.com"
          data-context="signin"
@@ -108,17 +110,17 @@
          data-logo_alignment="left">
     </div>
 
-    <!-- ✅ Visible Title -->
+    <!-- Headings -->
     <h1>Secure Web Form with Google Authentication and Submission Logging</h1>
     <h2>Submit Your Message</h2>
 
     <!-- Input Form -->
     <form id="textForm">
-      <input type="text" id="userInput" placeholder="Enter your message" required>
+      <input type="text" id="userInput" placeholder="Enter your message or a JWT" required>
       <button type="submit">Submit</button>
     </form>
 
-    <!-- Submission Table -->
+    <!-- Table for Output -->
     <table id="submissionTable">
       <thead>
         <tr>
@@ -127,22 +129,22 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Submissions will appear here -->
+        <!-- JS will insert rows -->
       </tbody>
     </table>
   </div>
 
+  <!-- JavaScript Logic -->
   <script>
-    // Hide form unless signed in
+    // Hide form until signed in
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("textForm").style.display = "none";
     });
 
-    // Google Sign-In success handler
+    // Google Sign-In callback
     function handleCredentialResponse(response) {
       const jwt = response.credential;
-      const payload = JSON.parse(atob(jwt.split('.')[1])); // Decode the JWT payload
-
+      const payload = JSON.parse(atob(jwt.split('.')[1]));
       alert("Signed in as: " + payload.name);
 
       localStorage.setItem("userName", payload.name);
@@ -151,21 +153,45 @@
       document.getElementById("textForm").style.display = "block";
     }
 
-    // Form submit behavior
-    document.getElementById("textForm").addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevent page reload
-
+    // Form Submission + Bonus JWT Check
+    document.getElementById("textForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
       const input = document.getElementById("userInput").value;
       const date = new Date().toLocaleString();
 
       const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
       const newRow = table.insertRow();
-
       const messageCell = newRow.insertCell(0);
       const dateCell = newRow.insertCell(1);
 
       messageCell.textContent = input;
       dateCell.textContent = date;
+
+      // BONUS: Check if input is a JWT
+      const isJWT = input.split('.').length === 3;
+
+      if (isJWT) {
+        try {
+          const { importSPKI, jwtVerify } = jose;
+
+          const publicKey = await importSPKI(
+            `-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
+arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
+-----END PUBLIC KEY-----`,
+            'ES256'
+          );
+
+          // Attempt to verify signature
+          await jwtVerify(input, publicKey);
+
+          // If valid, highlight the row
+          newRow.classList.add("highlighted");
+        } catch (err) {
+          console.warn("Invalid JWT:", err.message);
+          // No highlight if verification fails
+        }
+      }
 
       document.getElementById("userInput").value = '';
     });
