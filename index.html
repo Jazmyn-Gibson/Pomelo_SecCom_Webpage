@@ -7,7 +7,7 @@
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- Styling -->
+  <!-- Page Styling -->
   <style>
     body {
       background-color: #f2f4f8;
@@ -81,15 +81,15 @@
     }
 
     .highlighted {
-      background-color: #ffcccc !important;
+      background-color: #ffcccc;
     }
   </style>
 
   <!-- Google Identity SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- JOSE UMD (Non-module) Version -->
-  <script src="https://cdn.jsdelivr.net/npm/jose@5.2.0/dist/browser/jose.min.js"></script>
+  <!-- JOSE JWT Verification Library -->
+  <script src="https://cdn.jsdelivr.net/npm/jose@5.2.0/dist/browser/index.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -129,18 +129,17 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Submissions appear here -->
+        <!-- JS will insert rows -->
       </tbody>
     </table>
   </div>
 
+  <!-- JavaScript Logic -->
   <script>
-    // Hide form until signed in
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("textForm").style.display = "none";
     });
 
-    // Google login callback
     function handleCredentialResponse(response) {
       const jwt = response.credential;
       const payload = JSON.parse(atob(jwt.split('.')[1]));
@@ -150,7 +149,6 @@
       document.getElementById("textForm").style.display = "block";
     }
 
-    // Form submission and JWT check
     document.getElementById("textForm").addEventListener("submit", async function(event) {
       event.preventDefault();
       const input = document.getElementById("userInput").value;
@@ -164,22 +162,20 @@
       messageCell.textContent = input;
       dateCell.textContent = date;
 
-      // Check if JWT format
+      // Check if input is a JWT
       const isJWT = input.split('.').length === 3;
 
-      if (isJWT && window.jose) {
+      if (isJWT) {
         try {
-          const { importSPKI, jwtVerify } = window.jose;
+          const { importSPKI, jwtVerify } = jose;
+
           const publicKey = await importSPKI(
-`-----BEGIN PUBLIC KEY-----
-MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
-arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
------END PUBLIC KEY-----`,
+            `-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/5aJr5PK1pYw5hvzXCN8QrQ2UOdZ7HT+XkCzqn1Zh3hULzqvZIbFPdI3DxRKewZ7slRcMpbQFO3h+HdJD2f2pA==\n-----END PUBLIC KEY-----`,
             'ES256'
           );
+
           await jwtVerify(input, publicKey);
           newRow.classList.add("highlighted");
-          console.log("✅ JWT verified.");
         } catch (err) {
           console.warn("❌ Invalid JWT:", err.message);
         }
