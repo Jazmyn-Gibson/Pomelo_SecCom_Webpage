@@ -7,7 +7,6 @@
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- Page Styling -->
   <style>
     body {
       background-color: #f2f4f8;
@@ -85,11 +84,14 @@
     }
   </style>
 
-  <!-- Google Identity SDK -->
+  <!-- Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- JOSE JWT Verification Library -->
-  <script src="https://cdn.jsdelivr.net/npm/jose@5.2.0/dist/browser/index.min.js"></script>
+  <!-- JOSE JWT Verification using module loader -->
+  <script type="module">
+    import { jwtVerify, importSPKI } from 'https://cdn.jsdelivr.net/npm/jose@5.2.0/+esm';
+    window.jwtTools = { jwtVerify, importSPKI };
+  </script>
 </head>
 <body>
   <div class="container">
@@ -129,12 +131,12 @@
         </tr>
       </thead>
       <tbody>
-        <!-- JS will insert rows -->
+        <!-- JS will insert rows here -->
       </tbody>
     </table>
   </div>
 
-  <!-- JavaScript Logic -->
+  <!-- JS logic -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("textForm").style.display = "none";
@@ -151,7 +153,7 @@
 
     document.getElementById("textForm").addEventListener("submit", async function(event) {
       event.preventDefault();
-      const input = document.getElementById("userInput").value;
+      const input = document.getElementById("userInput").value.trim();
       const date = new Date().toLocaleString();
 
       const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
@@ -162,20 +164,21 @@
       messageCell.textContent = input;
       dateCell.textContent = date;
 
-      // Check if input is a JWT
       const isJWT = input.split('.').length === 3;
 
       if (isJWT) {
         try {
-          const { importSPKI, jwtVerify } = jose;
-
+          const { importSPKI, jwtVerify } = window.jwtTools;
           const publicKey = await importSPKI(
-            `-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/5aJr5PK1pYw5hvzXCN8QrQ2UOdZ7HT+XkCzqn1Zh3hULzqvZIbFPdI3DxRKewZ7slRcMpbQFO3h+HdJD2f2pA==\n-----END PUBLIC KEY-----`,
+`-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
+arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
+-----END PUBLIC KEY-----`,
             'ES256'
           );
-
           await jwtVerify(input, publicKey);
           newRow.classList.add("highlighted");
+          console.log("✅ JWT is valid and row is highlighted.");
         } catch (err) {
           console.warn("❌ Invalid JWT:", err.message);
         }
