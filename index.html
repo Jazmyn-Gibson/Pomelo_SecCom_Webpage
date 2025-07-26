@@ -2,6 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Import Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  /* Set background color and font for entire page */
+  body {
+    background-color: #f2f4f8;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    height: 100vh;           /* Full screen height */
+  }
+
+  /* Container to wrap content */
+  .container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  input[type="text"] {
+    padding: 10px;
+    width: 80%;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #4285f4;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #357ae8;
+  }
+
+  table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+
+  .g_id_signin {
+    margin-bottom: 20px;
+  }
+
+  .highlighted {
+    background-color: #ffcccc; /* Light red background for verified JWTs */
+  }
+</style>
+
   <title>Take Home Project</title>
 </head>
   <!-- Google Identity Services SDK -->
@@ -47,6 +121,8 @@
   });
 </script>
 <body>
+  <!-- 🧊 Centered Container -->
+  <div class="container">
   <h2>Submit your Message</h2>
 
   <!-- Input Form -->
