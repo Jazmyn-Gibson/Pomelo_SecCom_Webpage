@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Jazmyn Gibson Pomelo Care Security and Compliance Project</title>
-
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Page Styling -->
   <style>
     body {
       background-color: #f2f4f8;
@@ -90,7 +87,6 @@
       background-color: #ffcccc;
     }
   </style>
-
   <!-- Google Identity SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -139,6 +135,101 @@
 
   <!-- JavaScript Logic -->
   <script>
+    // Helper: base64url decode
+    function base64UrlToUint8Array(base64UrlString) {
+      let base64 = base64UrlString.replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4)
+        base64 += '=';
+      const raw = atob(base64);
+      const uint8 = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; ++i)
+        uint8[i] = raw.charCodeAt(i);
+      return uint8;
+    }
+
+    // Helper: PEM to ArrayBuffer
+    function pemToArrayBuffer(pem) {
+      const b64 = pem.replace(/-----[^\n]+\n?/g, '').replace(/\s+/g, '');
+      return base64UrlToUint8Array(b64).buffer;
+    }
+
+    // Import ES256 public key in PEM format
+    async function importPublicKey(pemKey) {
+      const keyBuffer = pemToArrayBuffer(pemKey);
+      return crypto.subtle.importKey(
+        "spki",
+        keyBuffer,
+        {
+          name: "ECDSA",
+          namedCurve: "P-256",
+        },
+        true,
+        ["verify"]
+      );
+    }
+
+    // Convert raw signature to DER
+    function esSigToDER(raw) {
+      if (raw.length !== 64) return null;
+      function toUnsigned(bn) {
+        if (bn[0] & 0x80) {
+          const out = new Uint8Array(bn.length + 1);
+          out.set([0], 0);
+          out.set(bn, 1);
+          return out;
+        }
+        return bn;
+      }
+      const r = toUnsigned(raw.slice(0, 32));
+      const s = toUnsigned(raw.slice(32));
+      function encodeInt(i) {
+        return [0x02, i.length, ...i];
+      }
+      const sequence = [...encodeInt(r), ...encodeInt(s)];
+      return new Uint8Array([0x30, sequence.length, ...sequence]);
+    }
+
+    // Verify ES256 JWT
+    async function verifyES256JWT(jwt, publicKeyPEM) {
+      const parts = jwt.split(".");
+      if (parts.length !== 3) return false;
+      const [headerB64, payloadB64, signatureB64] = parts;
+      let header;
+      try {
+        header = JSON.parse(atob(headerB64.replace(/-/g, '+').replace(/_/g, '/')));
+      } catch (e) {
+        return false;
+      }
+      if (header.alg !== "ES256") return false;
+      let pubKey;
+      try {
+        pubKey = await importPublicKey(publicKeyPEM);
+      } catch (e) {
+        return false;
+      }
+      const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
+      let sig = base64UrlToUint8Array(signatureB64);
+      const derSig = esSigToDER(sig);
+      if (!derSig) return false;
+      try {
+        return await crypto.subtle.verify(
+          { name: "ECDSA", hash: { name: "SHA-256" } },
+          pubKey,
+          derSig,
+          data
+        );
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Your ES256 Public Key
+    const PUBLIC_KEY_ES256 = `
+-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEMU1JFVEO9FkVr0r041GpAWzKvQi1TBYm
+arJj3+aNeC2aK9GT7Hct1OJGWQGbUkNWTeUr+Ui09PjBit+AMYuHgA==
+-----END PUBLIC KEY-----`;
+
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("textForm").style.display = "none";
     });
@@ -152,11 +243,10 @@
       document.getElementById("textForm").style.display = "block";
     }
 
-    document.getElementById("textForm").addEventListener("submit", function(event) {
+    document.getElementById("textForm").addEventListener("submit", async function(event) {
       event.preventDefault();
       const input = document.getElementById("userInput").value;
       const date = new Date().toLocaleString();
-
       const table = document.getElementById("submissionTable").getElementsByTagName('tbody')[0];
       const newRow = table.insertRow();
       const messageCell = newRow.insertCell(0);
@@ -165,10 +255,16 @@
       messageCell.textContent = input;
       dateCell.textContent = date;
 
-      // Check if input looks like a JWT (three dot-separated base64url strings)
+      // Check for JWT
       const isLikelyJWT = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(input);
+
       if (isLikelyJWT) {
-        newRow.classList.add("highlighted");
+        const verified = await verifyES256JWT(input, PUBLIC_KEY_ES256);
+        if (verified) {
+          newRow.style.backgroundColor = "#ff0000"; // red
+        } else {
+          newRow.classList.add("highlighted"); // pink fallback
+        }
       }
 
       document.getElementById("userInput").value = '';
